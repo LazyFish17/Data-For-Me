@@ -48,6 +48,10 @@ def main():
         ctx = browser.new_context(
             viewport={"width": 1280, "height": 2000},
             locale="en-IE",
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+            ),
             timezone_id="Europe/Dublin",
         )
         for club in clubs:
@@ -56,7 +60,9 @@ def main():
             status = "ok"
             try:
                 page = ctx.new_page()
-                page.goto(url, wait_until="networkidle", timeout=45000)
+                resp = page.goto(url, wait_until="networkidle", timeout=45000)
+                if resp is not None and resp.status >= 400:
+                    status = f"http {resp.status}"
                 dismiss_cookies(page)
                 page.wait_for_timeout(4000)  # let the availability grid render
                 zoom = club.get("zoom")  # e.g. 0.5 shows the page at 50%
